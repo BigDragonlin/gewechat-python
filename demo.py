@@ -4,9 +4,11 @@ import os
 def main():
     # 配置参数
     base_url = os.environ.get("BASE_URL", "http://127.0.0.1:2531/v2/api")
-    token = os.environ.get("GEWECHAT_TOKE", "xxx")
-    app_id = os.environ.get("APP_ID", "xxx")
-    send_msg_nickname = "张伟" # 要发送消息的好友昵称
+    # token = os.environ.get("GEWECHAT_TOKE", "xxx")
+    token = ""
+    # app_id = os.environ.get("APP_ID", "xxx")
+    app_id = "wx_8tOrPZFSoywS9s1GfYPpc"
+    send_msg_nickname = "林木" # 要发送消息的好友昵称
 
     # 创建 GewechatClient 实例
     client = GewechatClient(base_url, token)
@@ -17,7 +19,6 @@ def main():
         print("登录失败")
         return
     try:
-
         # 获取好友列表
         fetch_contacts_list_result = client.fetch_contacts_list(app_id)
         if fetch_contacts_list_result.get('ret') != 200 or not fetch_contacts_list_result.get('data'):
