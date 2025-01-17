@@ -1,5 +1,7 @@
 import sqlite3
 import unittest
+from receive_message.receive_personal_message import *
+
 import os
 def create_table():
     conn = sqlite3.connect('example.db')
@@ -29,7 +31,15 @@ class TestSQLite(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # 创建数据库和表
-        create_table()
+        # create_table()
+        cls.personal_message_handler = PersonalMessageHandler()
+        
+
+    # @classmethod
+    # def tearDownClass(cls):
+    #     # 测试结束后删除数据库文件
+    #     if os.path.exists('example.db'):
+    #         os.remove('example.db')
 
     def test_insert_and_get_users(self):
         # 插入数据
@@ -45,12 +55,17 @@ class TestSQLite(unittest.TestCase):
         self.assertEqual(users[0][2], 30)
         self.assertEqual(users[1][1], 'Bob')
         self.assertEqual(users[1][2], 25)
-
-    # @classmethod
-    # def tearDownClass(cls):
-    #     # 测试结束后删除数据库文件
-    #     if os.path.exists('example.db'):
-    #         os.remove('example.db')
+    
+    # 将用户发送的消息放到sqlite中，私聊的话放到私聊数据库，群聊的话放到群聊数据库，群聊数据库里面有个字段是群聊id，私聊数据库里面有个字段是用户id
+    # 测试插入私聊数据
+    def test_insert_private_chat(self):
+        message = {"user_id" : "1", "name" : "bob", "age" : 13}
+        self.personal_message_handler.save_message(message)
+        
+    # 测试插入群聊数据
+    def test_insert_group_chat(self):
+        print("test_insert_group_chat")
+    
 
 if __name__ == '__main__':
     unittest.main()
