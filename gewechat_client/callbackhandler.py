@@ -1,9 +1,10 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from receive_message.receive_personal_message import personal_message_handler 
+# from receive_message.receive_group_message import group_message_handler
 
 class CallbackHandler(BaseHTTPRequestHandler):
     def do_POST(self):
-        print("收到请求 post")
         if self.path != "/bot/receive/":
             self.send_response(404)
             self.send_header('Content-type', 'application/json')
@@ -19,7 +20,7 @@ class CallbackHandler(BaseHTTPRequestHandler):
         # 解析 JSON 数据
         try:
             data = json.loads(post_data.decode('utf-8'))
-            print("收到回调消息:", data)  # 打印回调地址发来的信息
+            personal_message_handler(data)
             
             # 返回成功响应
             self.send_response(200)

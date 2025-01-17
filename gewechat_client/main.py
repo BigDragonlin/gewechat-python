@@ -1,5 +1,6 @@
 from gewechat_client import GewechatClient
 from callbackhandler import run_callback_server
+from send_message.send_message import send_msg
 import threading
 import os
 
@@ -11,7 +12,7 @@ def main():
     callback_url = "http://host.docker.internal:9912/bot/receive/"
     token = ""
     # app_id = os.environ.get("APP_ID", "xxx")
-    app_id = "wx_mKqJB4PYbvELd5op2PwkM"
+    app_id = "wx_eK2IMGLgJyvVz7yPPN7ao"
     # 回调函数端口
     port = 9912
 
@@ -23,13 +24,17 @@ def main():
         print("登录失败")
         return
     try:
-        #传入回调函数
-        #在新进程中启用回调
-        callback_thread = threading.Thread(target=run_callback_server, args=(callback_url, port))
-        callback_thread.start()
-        
-        callback_state = client.set_callback(client._login_api.token, callback_url)
-        print("设置回调", callback_state)
+        # 给发一条信息确认登录成功
+        send_msg_error = send_msg(client, app_id)
+        if not send_msg_error:
+            print("发送消息失败")
+            return
+        else:
+            #传入回调函数
+            #在新进程中启用回调
+            callback_thread = threading.Thread(target=run_callback_server, args=(callback_url, port))
+            callback_thread.start()
+            client.set_callback(client._login_api.token, callback_url)
     except Exception as e:
         print("Failed to fetch contacts list:", str(e))
 
