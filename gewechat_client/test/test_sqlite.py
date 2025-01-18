@@ -1,6 +1,6 @@
 import sqlite3
 import unittest
-from receive_message.receive_personal_message import *
+from .. receive_message.receive_personal_message import *
 
 import os
 def create_table():
@@ -59,7 +59,7 @@ class TestSQLite(unittest.TestCase):
     # 将用户发送的消息放到sqlite中，私聊的话放到私聊数据库，群聊的话放到群聊数据库，群聊数据库里面有个字段是群聊id，私聊数据库里面有个字段是用户id
     # 测试插入私聊数据
     def test_insert_private_chat(self):
-        message = {"user_id" : "1", "name" : "bob", "age" : 13}
+        message = {"name" : "bob", "message" : "hello world"}
         self.personal_message_handler.save_message(message)
         
     # 测试插入群聊数据

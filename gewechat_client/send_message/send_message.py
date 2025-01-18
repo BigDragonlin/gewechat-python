@@ -1,6 +1,20 @@
-#找到好友，给好友发消息
+class Send_message:
+    def __init__(self):
+        pass
+
+    # def send_msg_to_person(name, message)
+
+    def send_msg_by_wxid(sdlf, wxid, message):
+        send_msg_result = client.post_text(app_id, wxid, "你好啊")
+        if send_msg_result.get('ret') != 200:
+            print("发送消息失败:", send_msg_result)
+        return
+        print("发送消息成功:", send_msg_result)
+
+
+# 找到好友，给好友发消息
 def send_msg(client, app_id):
-    send_msg_nickname = "林木" # 要发送消息的好友昵称
+    send_msg_nickname = "林木"  # 要发送消息的好友昵称
     # 获取好友列表
     fetch_contacts_list_result = client.fetch_contacts_list(app_id)
     if fetch_contacts_list_result.get('ret') != 200 or not fetch_contacts_list_result.get('data'):
