@@ -1,6 +1,7 @@
 import json
 import sqlite3
 from ..ai import *
+from .. import main
 
 class PersonalMessageHandler:
     def __init__(self):
@@ -54,8 +55,10 @@ class PersonalMessageHandler:
     def process_message(self, sender, message, sender_wxid):
         # 获取本用户所有消息,根据时间戳排序
         # 获取用户信息,接入ai,帮我
-        self.ai.get_response(message)
-        
+        response = self.ai.get_response(message)
+        # 根据时间戳排序
+        # 讲回答放入消息队列
+        main.message_queue.put({sender_wxid: response})
 
 def personal_message_handler(data):
     # 检查 'Data' 键是否存在

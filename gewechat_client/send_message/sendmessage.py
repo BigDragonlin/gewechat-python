@@ -1,16 +1,28 @@
-class Send_message:
-    def __init__(self):
-        pass
+class SendMessage:
+    def __init__(self, client, app_id):
+        self.client = client
+        self.app_id = app_id
 
     # def send_msg_to_person(name, message)
 
-    def send_msg_by_wxid(sdlf, wxid, message):
-        send_msg_result = client.post_text(app_id, wxid, "你好啊")
+    def send_msg_by_wxid(self, wx_id, message):
+        app_id = self.app_id
+        send_msg_result = self.client.post_text(app_id, wx_id, message)
         if send_msg_result.get('ret') != 200:
-            print("发送消息失败:", send_msg_result)
-        return
-        print("发送消息成功:", send_msg_result)
+           print("发送消息失败:", send_msg_result)
+           return
 
+def run_send_message_server(client, app_id, message_queue):
+    send_msg = SendMessage(client, app_id)
+    while True:
+        try:
+            message = message_queue.get()
+            print("Received message:", message)
+            # 将消息返还给发送人
+            # send_msg.send_msg_by_wxid(message[""])
+            # send_msg_by_wxid(client, app_id, message)
+        except Exception as e:
+            print("An error occurred:", str(e))
 
 # 找到好友，给好友发消息
 def send_msg(client, app_id):

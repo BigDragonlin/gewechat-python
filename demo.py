@@ -4,14 +4,14 @@ import os
 def main():
     # 配置参数
     base_url = os.environ.get("BASE_URL", "http://127.0.0.1:2531/v2/api")
-    # base_url = os.environ.get("BASE_URL", "http://10.244.148.75:2531/v2/api")
-
 
     # token = os.environ.get("GEWECHAT_TOKE", "xxx")
     token = ""
     # app_id = os.environ.get("APP_ID", "xxx")
-    app_id = "wx_mKqJB4PYbvELd5op2PwkM"
-    # app_id = "wx_8tOrPZFSoywS9s1GfYPpc"
+    # app_id = "wx_mKqJB4PYbvELd5op2PwkM"
+    app_id = ""
+
+
     send_msg_nickname = "林木" # 要发送消息的好友昵称
 
     # 创建 GewechatClient 实例
@@ -40,35 +40,6 @@ def main():
         if friends_info.get('ret') != 200 or not friends_info.get('data'):
             print("获取好友简要信息失败:", friends_info)
             return
-        # {
-        #     "ret": 200,
-        #     "msg": "获取联系人信息成功",
-        #     "data": [
-        #         {
-        #             "userName": "weixin",
-        #             "nickName": "微信团队",
-        #             "pyInitial": "WXTD",
-        #             "quanPin": "weixintuandui",
-        #             "sex": 0,
-        #             "remark": "",
-        #             "remarkPyInitial": "",
-        #             "remarkQuanPin": "",
-        #             "signature": null,
-        #             "alias": "",
-        #             "snsBgImg": null,
-        #             "country": "",
-        #             "bigHeadImgUrl": "https: //wx.qlogo.cn/mmhead/Q3auHgzwzM6H8bJKHKyGY2mk0ljLfodkWnrRbXLn3P11f68cg0ePxA/0",
-        #             "smallHeadImgUrl": "https://wx.qlogo.cn/mmhead/Q3auHgzwzM6H8bJKHKyGY2mk0ljLfodkWnrRbXLn3P11f68cg0ePxA/132",
-        #             "description": null,
-        #             "cardImgUrl": null,
-        #             "labelList": null,
-        #             "province": "",
-        #             "city": "",
-        #             "phoneNumList": null
-        #         }
-        #     ]
-        # }
-        
         # 找对目标好友的wxid
         friends_info_list = friends_info['data']
         if not friends_info_list:
