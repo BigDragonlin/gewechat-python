@@ -1,7 +1,5 @@
-import json
 import sqlite3
-from ..ai import *
-from .. import main
+from gewechat_client.ai import *
 
 class PersonalMessageHandler:
     def __init__(self):
@@ -13,16 +11,42 @@ class PersonalMessageHandler:
     def init_database(self):
         self.conn = sqlite3.connect('messages.db')
         self.cursor = self.conn.cursor()
+        # 初始化个人聊天信息库
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS user_messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
+                wx_id TEXT NOT NULL,
                 message TEXT NOT NULL,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         self.conn.commit()
-
+        
+        # 初始化回答队列数据库
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS answer_queue_personal (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                wx_id TEXT NOT NULL,
+                message TEXT NOT NULL,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        self.conn.commit()
+    def save_message(self, data):
+        sender_wx_id = data["sender_wx_id"]
+        message = data["message"]
+        # 保存私聊消息到数据库
+        self.cursor.execute("INSERT INTO user_messages (wx_id, message) VALUES (?, ?)", (sender_wx_id, message))
+        self.conn.commit()
+    
+    def save_answer(self, data):
+        wx_id = data["wx_id"]
+        message = data["message"]
+         # 检查是否已存在该 wx_id
+        print("回答", wx_id, message)
+        self.cursor.execute("INSERT INTO answer_queue_personal (wx_id, message) VALUES (?, ?)", (wx_id, message))
+        self.conn.commit()
+        
     def handle_message(self, data):
         # 处理私聊消息
         if "Data" not in data:
@@ -35,30 +59,20 @@ class PersonalMessageHandler:
             push_content_str = data["Data"].get("PushContent")  # 假设 PushContentStr 是消息内容的键
             if push_content_str and " : " in push_content_str:
                 sender, message = push_content_str.split(" : ", 1)
-                print(f"发送者: {sender}")
-                print(f"发送内容: {message}")
-                sender_wxid = data["Data"].get("FromUserName").get("string")
-                self.save_message({"name": sender, "message": message})
-                self.process_message(sender, message, sender_wxid)
+                sender_wx_id = data["Data"].get("FromUserName").get("string")
+                print("接收消息", sender, message)
+                self.save_message({"sender_wx_id": sender_wx_id, "message": message})
+                self.process_message(message, sender_wx_id)
             else:
                 print("Error: Invalid format for 'PushContentStr'.")
         else:
             print("Error: 'PushContent' is not equal to 1 or is not an integer.")
 
-    def save_message(self, data):
-        name = data["name"]
-        message = data["message"]
-        # 保存私聊消息到数据库
-        self.cursor.execute("INSERT INTO user_messages (name, message) VALUES (?, ?)", (name, message))
-        self.conn.commit()
-
-    def process_message(self, sender, message, sender_wxid):
+    def process_message(self, message, sender_wx_id):
         # 获取本用户所有消息,根据时间戳排序
         # 获取用户信息,接入ai,帮我
         response = self.ai.get_response(message)
-        # 根据时间戳排序
-        # 讲回答放入消息队列
-        main.message_queue.put({sender_wxid: response})
+        self.save_answer({"wx_id": sender_wx_id, "message": response})
 
 def personal_message_handler(data):
     # 检查 'Data' 键是否存在

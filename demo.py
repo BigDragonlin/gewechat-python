@@ -3,13 +3,13 @@ import os
 
 def main():
     # 配置参数
-    base_url = os.environ.get("BASE_URL", "http://127.0.0.1:2531/v2/api")
+    # base_url = os.environ.get("BASE_URL", "http://127.0.0.1:2531/v2/api")
+    base_url = os.environ.get("BASE_URL", "http://host.docker.internal:2531/v2/api")
 
     # token = os.environ.get("GEWECHAT_TOKE", "xxx")
     token = ""
     # app_id = os.environ.get("APP_ID", "xxx")
-    # app_id = "wx_mKqJB4PYbvELd5op2PwkM"
-    app_id = ""
+    app_id = "wx_eK2IMGLgJyvVz7yPPN7ao"
 
 
     send_msg_nickname = "林木" # 要发送消息的好友昵称

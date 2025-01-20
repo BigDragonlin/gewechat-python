@@ -1,9 +1,41 @@
+import  sqlite3
+import time
+from traceback import print_stack
+
+
 class SendMessage:
     def __init__(self, client, app_id):
+        database = "messages.db"
+        table_name = "answer_queue_personal"
         self.client = client
         self.app_id = app_id
-
-    # def send_msg_to_person(name, message)
+        self.init_database_personal_queue(database, table_name)
+        #初始化sqlite个人消息队列
+    
+    def init_database_personal_queue(self, database, table_name):
+        #初始化个人消息队列
+        self.conn = sqlite3.connect(database)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS {table_name} (
+                wx_id TEXT PRIMARY KEY,
+                message TEXT
+            )
+        """)
+        self.conn.commit()
+        
+    # 插入数据库一条消息
+    def insert_database_personal_queue(self, wx_id, message):
+        self.cursor.execute('INSERT INTO answer_queue_personal (wx_id, message) VALUES (?, ?)', (wx_id, message))
+        self.conn.commit()
+            
+    def select_database_personal_by_wx_id(self):
+        self.cursor.execute('SELECT * FROM answer_queue_personal')
+        result = self.cursor.fetchall()
+        if result:
+            return result
+        else:
+            return None
 
     def send_msg_by_wxid(self, wx_id, message):
         app_id = self.app_id
@@ -12,15 +44,24 @@ class SendMessage:
            print("发送消息失败:", send_msg_result)
            return
 
-def run_send_message_server(client, app_id, message_queue):
-    send_msg = SendMessage(client, app_id)
+def run_send_message_server(client, app_id):
+    send_handler = SendMessage(client, app_id)
+    wechat_id = client.
+    sleep_time = 1
     while True:
         try:
-            message = message_queue.get()
-            print("Received message:", message)
-            # 将消息返还给发送人
-            # send_msg.send_msg_by_wxid(message[""])
-            # send_msg_by_wxid(client, app_id, message)
+            messages = send_handler.select_database_personal_by_wx_id()
+            if messages:
+                print("发送消息:", messages)
+                for message in messages:
+                    send_handler.send_msg_by_wxid(message[0], message[1])
+                
+                    send_handler.cursor.execute('DELETE FROM answer_queue_personal WHERE wx_id=?', (message[0],))
+                    send_handler.conn.commit()
+                sleep_time = 1
+            else:
+                time.sleep(sleep_time)
+                sleep_time = min(sleep_time * 2, 5)
         except Exception as e:
             print("An error occurred:", str(e))
 

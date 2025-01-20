@@ -1,7 +1,6 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from receive_message.receive_personal_message import personal_message_handler 
-# from receive_message.receive_group_message import group_message_handler
 
 class CallbackHandler(BaseHTTPRequestHandler):
     def do_POST(self):
