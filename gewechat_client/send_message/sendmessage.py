@@ -1,7 +1,10 @@
 import  sqlite3
 import time
-from traceback import print_stack
 
+from pyte.screens import Cursor
+
+from gewechat_client import GewechatClient
+from traceback import print_stack
 
 class SendMessage:
     def __init__(self, client, app_id):
@@ -9,8 +12,10 @@ class SendMessage:
         table_name = "answer_queue_personal"
         self.client = client
         self.app_id = app_id
-        self.init_database_personal_queue(database, table_name)
         #初始化sqlite个人消息队列
+        self.init_database_personal_queue(database, table_name)
+        #初始化发送者信息
+        self.self_profile = client._personal_api.get_profile(app_id)
     
     def init_database_personal_queue(self, database, table_name):
         #初始化个人消息队列
@@ -22,11 +27,6 @@ class SendMessage:
                 message TEXT
             )
         """)
-        self.conn.commit()
-        
-    # 插入数据库一条消息
-    def insert_database_personal_queue(self, wx_id, message):
-        self.cursor.execute('INSERT INTO answer_queue_personal (wx_id, message) VALUES (?, ?)', (wx_id, message))
         self.conn.commit()
             
     def select_database_personal_by_wx_id(self):
@@ -44,28 +44,37 @@ class SendMessage:
            print("发送消息失败:", send_msg_result)
            return
 
-def run_send_message_server(client, app_id):
+def run_send_message_server(client: GewechatClient, app_id):
     send_handler = SendMessage(client, app_id)
-    wechat_id = client.
-    sleep_time = 1
+    send_wx_id = send_handler.self_profile["data"]["wxid"]
     while True:
         try:
-            messages = send_handler.select_database_personal_by_wx_id()
-            if messages:
-                print("发送消息:", messages)
-                for message in messages:
-                    send_handler.send_msg_by_wxid(message[0], message[1])
-                
-                    send_handler.cursor.execute('DELETE FROM answer_queue_personal WHERE wx_id=?', (message[0],))
-                    send_handler.conn.commit()
-                sleep_time = 1
-            else:
-                time.sleep(sleep_time)
-                sleep_time = min(sleep_time * 2, 5)
-        except Exception as e:
-            print("An error occurred:", str(e))
+            with sqlite3.connect("messages.db") as conn:
+                cursor = conn.cursor()
+                messages = cursor.execute('SELECT * FROM answer_queue_personal').fetchall()
+                if messages:
+                    #开启事务
+                    conn.execute("BEGIN TRANSACTION")
+                    try:
+                        for message in messages:
+                            # 给个人发送消息
+                            send_handler.send_msg_by_wxid(message[0], message[1])
+                            cursor.execute('DELETE FROM answer_queue_personal WHERE wx_id=?', (message[0],))
 
-# 找到好友，给好友发消息
+                            # 将个人消息插入到数据库
+                            cursor.execute('INSERT INTO user_messages (wx_id, message) VALUES (?, ?)',
+                                           (send_wx_id, message[1]))
+                            conn.commit()
+                    except Exception as e:
+                        # 回滚事务
+                        conn.rollback()
+                        print_stack()
+                        continue
+        except Exception as e:
+            print_stack()
+            continue
+
+
 def send_msg(client, app_id):
     send_msg_nickname = "林木"  # 要发送消息的好友昵称
     # 获取好友列表
