@@ -1,7 +1,9 @@
 import sqlite3
+from idlelib.rpc import response_queue
+
 from gewechat_client.ai import *
 
-class PersonalMessageHandler:
+class message_handler:
     def __init__(self):
         # 初始化数据库
         self.init_database()
@@ -48,13 +50,12 @@ class PersonalMessageHandler:
         self.conn.commit()
         
     def handle_message(self, data):
-        # 处理私聊消息
         if "Data" not in data:
             print("Error: 'Data' key is missing in the input data.")
             return
-        # 获取 'PushContent'
         push_content = data["Data"].get("MsgType")
-        # 检查 'PushContent' 是否为预期类型
+        
+        #文字消息
         if isinstance(push_content, int) and push_content == 1:
             push_content_str = data["Data"].get("PushContent")  # 假设 PushContentStr 是消息内容的键
             if push_content_str and " : " in push_content_str:
@@ -69,8 +70,16 @@ class PersonalMessageHandler:
             print("Error: 'PushContent' is not equal to 1 or is not an integer.")
 
     def process_message(self, message, sender_wx_id):
-        # 获取本用户所有消息,根据时间戳排序
-        # 获取用户信息,接入ai,帮我
+        # 判断message是不是@help, 如果是则返回帮助信息
+        response = ""
+        if message.startswith("@help"):
+            response = "欢迎使用Gewechat-AI，你可以发送以下命令：\n\n" \
+                       "@help：查看帮助信息\n" \
+                       "@clear：清除历史记录\n" \
+                       "@reset：重置对话\n" \
+                       "@exit：退出对话\n" \
+                       "@exitall：退出所有对话\n" \
+                       "@clearall：清除所有对话记录\n" 
         response = self.ai.get_response(message)
         self.save_answer({"wx_id": sender_wx_id, "message": response})
 
@@ -79,13 +88,4 @@ def personal_message_handler(data):
     if "Data" not in data:
         print("Error: 'Data' key is missing in the input data.")
         return
-    # 获取 'PushContent'
-    push_content = data["Data"].get("MsgType")
-
-    # 检查 'PushContent' 是否为预期类型
-    if isinstance(push_content, int) and push_content == 1:
-        handler_msg = PersonalMessageHandler()
-        handler_msg.handle_message(data)
-    else:
-        print("Error: Invalid format for 'PushContentStr'.")
-
+    message_handler().handle_message(data)
