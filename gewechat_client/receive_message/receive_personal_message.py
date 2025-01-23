@@ -1,9 +1,7 @@
 import sqlite3
-from idlelib.rpc import response_queue
-
 from gewechat_client.ai import *
 
-class message_handler:
+class MessageHandler:
     def __init__(self):
         # 初始化数据库
         self.init_database()
@@ -73,19 +71,30 @@ class message_handler:
         # 判断message是不是@help, 如果是则返回帮助信息
         response = ""
         if message.startswith("@help"):
-            response = "欢迎使用Gewechat-AI，你可以发送以下命令：\n\n" \
+            response = "你可以发送以下命令：\n\n" \
                        "@help：查看帮助信息\n" \
                        "@clear：清除历史记录\n" \
                        "@reset：重置对话\n" \
                        "@exit：退出对话\n" \
                        "@exitall：退出所有对话\n" \
-                       "@clearall：清除所有对话记录\n" 
-        response = self.ai.get_response(message)
+                       "@clearall：清除所有对话记录\n"
+        elif sender_wx_id == "39292796878@chatroom":
+            self.process_879chatroom(message)
+        else:
+            response = self.ai.get_response("deepseek-chat",message, "你是一个私人助理，回答我的问题，最好每句回答要带上表情符号")
         self.save_answer({"wx_id": sender_wx_id, "message": response})
 
+    #处理读书群消息
+    def process_879chatroom(self, message):
+        #判断是不是打卡消息,"deepseek-reasoner"
+        check_is_checkin = self.ai.get_response("deepseek-chat", message, "你是一个读书打卡群的机器人，判断消息是否是读书分享内容,如果是打卡消息请返回true，如果不是打卡消息，请返回false。")
+        #如果是打卡消息，将打卡数据存到数据库中。并回复打卡成功
+        print("check info", check_is_checkin)
+        if check_is_checkin == "true":
+            print("打卡成功")
 def personal_message_handler(data):
     # 检查 'Data' 键是否存在
     if "Data" not in data:
         print("Error: 'Data' key is missing in the input data.")
         return
-    message_handler().handle_message(data)
+    MessageHandler().handle_message(data)

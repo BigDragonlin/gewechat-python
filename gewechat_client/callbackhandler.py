@@ -19,6 +19,7 @@ class CallbackHandler(BaseHTTPRequestHandler):
         # 解析 JSON 数据
         try:
             data = json.loads(post_data.decode('utf-8'))
+            #处理返回数据
             personal_message_handler(data)
             
             # 返回成功响应

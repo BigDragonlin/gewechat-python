@@ -32,7 +32,7 @@ class TestSQLite(unittest.TestCase):
     def setUpClass(cls):
         # 创建数据库和表
         # create_table()
-        cls.personal_message_handler = message_handler()
+        cls.personal_message_handler = MessageHandler()
         
 
     # @classmethod
