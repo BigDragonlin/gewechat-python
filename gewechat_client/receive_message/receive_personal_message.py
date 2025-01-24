@@ -31,6 +31,16 @@ class MessageHandler:
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        
+        # 初始化打卡数据库，包括打卡人wx_id,打卡内容，时间戳
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS checkin_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                wx_id TEXT NOT NULL,
+                message TEXT NOT NULL,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
         self.conn.commit()
     def save_message(self, data):
         sender_wx_id = data["sender_wx_id"]
@@ -57,17 +67,17 @@ class MessageHandler:
         if isinstance(push_content, int) and push_content == 1:
             push_content_str = data["Data"].get("PushContent")  # 假设 PushContentStr 是消息内容的键
             if push_content_str and " : " in push_content_str:
-                sender, message = push_content_str.split(" : ", 1)
+                _, message = push_content_str.split(" : ", 1)
                 sender_wx_id = data["Data"].get("FromUserName").get("string")
-                print("接收消息", sender, message)
+                print("接收消息", sender_wx_id, message)
                 self.save_message({"sender_wx_id": sender_wx_id, "message": message})
-                self.process_message(message, sender_wx_id)
+                self.process_message(message, sender_wx_id, data)
             else:
                 print("Error: Invalid format for 'PushContentStr'.")
         else:
             print("Error: 'PushContent' is not equal to 1 or is not an integer.")
 
-    def process_message(self, message, sender_wx_id):
+    def process_message(self, message, sender_wx_id, data):
         # 判断message是不是@help, 如果是则返回帮助信息
         response = ""
         if message.startswith("@help"):
@@ -79,19 +89,38 @@ class MessageHandler:
                        "@exitall：退出所有对话\n" \
                        "@clearall：清除所有对话记录\n"
         elif sender_wx_id == "39292796878@chatroom":
-            self.process_879chatroom(message)
+            self.process_879chatroom(message, data)
         else:
             response = self.ai.get_response("deepseek-chat",message, "你是一个私人助理，回答我的问题，最好每句回答要带上表情符号")
         self.save_answer({"wx_id": sender_wx_id, "message": response})
 
     #处理读书群消息
-    def process_879chatroom(self, message):
+    def process_879chatroom(self, message, data):
         #判断是不是打卡消息,"deepseek-reasoner"
         check_is_checkin = self.ai.get_response("deepseek-chat", message, "你是一个读书打卡群的机器人，判断消息是否是读书分享内容,如果是打卡消息请返回true，如果不是打卡消息，请返回false。")
         #如果是打卡消息，将打卡数据存到数据库中。并回复打卡成功
-        print("check info", check_is_checkin)
         if check_is_checkin == "true":
-            print("打卡成功")
+            send_message_wx_id = data["Data"].get("Content").get("string").split(':\n', 1)[0]
+            self.save_checkin_data(send_message_wx_id, message)
+            print(send_message_wx_id, "打卡成功")
+        else:
+            print("check info", check_is_checkin)
+            
+    #插入打卡信息到打卡数据库
+    def save_checkin_data(self, wx_id, message):
+        # 检查今天是否已有该用户的打卡记录
+        self.cursor.execute(
+            "SELECT 1 FROM checkin_data "
+            "WHERE wx_id=? AND DATE(timestamp) = DATE('now') "
+            "LIMIT 1",
+            (wx_id,)
+        )
+        if self.cursor.fetchone():
+            print("Error: User has already checked in today.")
+            return
+        self.cursor.execute("INSERT INTO checkin_data (wx_id, message) VALUES (?, ?)", (wx_id, message))
+        self.conn.commit()
+            
 def personal_message_handler(data):
     # 检查 'Data' 键是否存在
     if "Data" not in data:

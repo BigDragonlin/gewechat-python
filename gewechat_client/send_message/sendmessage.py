@@ -57,21 +57,17 @@ def run_send_message_server(client: GewechatClient, app_id):
                     conn.execute("BEGIN TRANSACTION")
                     try:
                         for message in messages:
-                            # 给个人发送消息
-                            send_handler.send_msg_by_wxid(message[0], message[1])
+                            #判断message[1]是否为空
+                            if message[1]:
+                                send_handler.send_msg_by_wxid(message[0], message[1])
+                                cursor.execute('INSERT INTO user_messages (wx_id, message) VALUES (?, ?)',(send_wx_id, message[1]))
                             cursor.execute('DELETE FROM answer_queue_personal WHERE wx_id=?', (message[0],))
-
-                            # 将个人消息插入到数据库
-                            cursor.execute('INSERT INTO user_messages (wx_id, message) VALUES (?, ?)',
-                                           (send_wx_id, message[1]))
                             conn.commit()
                     except Exception as e:
                         # 回滚事务
                         conn.rollback()
-                        print_stack()
                         continue
         except Exception as e:
-            print_stack()
             continue
 
 
