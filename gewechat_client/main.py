@@ -7,12 +7,13 @@ import os
 def main():
     # 配置参数
     # base_url = os.environ.get("BASE_URL", "http://10.244.148.75:2531/v2/api")
-    base_url = os.environ.get("BASE_URL", "http://127.0.0.1:2531/v2/api")
+    # base_url = os.environ.get("BASE_URL", "http://127.0.0.1:2531/v2/api")
+    base_url = os.environ.get("BASE_URL", "http://gewe:2531/v2/api")
     # 回调函数
-    callback_url = "http://host.docker.internal:9912/bot/receive/"
+    callback_url = "http://ubuntu_container:9912/bot/receive/"
     token = ""
     # app_id = os.environ.get("APP_ID", "xxx")
-    app_id = "wx_eK2IMGLgJyvVz7yPPN7ao"
+    app_id = "wx_QdUWDqKzwCFyPa1BsUVuy"
     # 回调函数端口
     port = 9912
 
