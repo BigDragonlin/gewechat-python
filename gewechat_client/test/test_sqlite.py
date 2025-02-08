@@ -1,6 +1,6 @@
-import sqlite3
 import unittest
-from .. receive_message.receive_personal_message import *
+import sqlite3
+from gewechat_client.receive_message.receive_personal_message import *
 
 import os
 def create_table():

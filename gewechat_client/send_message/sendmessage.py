@@ -1,13 +1,13 @@
 import  sqlite3
 import time
 
-from pyte.screens import Cursor
+# from pyte.screens import Cursor
 
-from gewechat_client import GewechatClient
+from ..api.client import GewechatClient
 from traceback import print_stack
 
 class SendMessage:
-    def __init__(self, client, app_id):
+    def __init__(self, client:GewechatClient, app_id):
         database = "messages.db"
         table_name = "answer_queue_personal"
         self.client = client
@@ -57,7 +57,6 @@ def run_send_message_server(client: GewechatClient, app_id):
                     conn.execute("BEGIN TRANSACTION")
                     try:
                         for message in messages:
-                            #判断message[1]是否为空
                             if message[1]:
                                 send_handler.send_msg_by_wxid(message[0], message[1])
                                 cursor.execute('INSERT INTO user_messages (wx_id, message) VALUES (?, ?)',(send_wx_id, message[1]))

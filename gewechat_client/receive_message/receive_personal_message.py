@@ -1,12 +1,13 @@
 import sqlite3
-from gewechat_client.ai import *
+from ..util.ai import *
+from ..util.config import config
 
 class MessageHandler:
     def __init__(self):
         # 初始化数据库
         self.init_database()
         # 初始化openid
-        self.ai = ai("sk-4d28ca4e4e3c41d7ba35b57629dd72b1")
+        self.ai = ai(config["ai"]["api_key"])
         
     def init_database(self):
         self.conn = sqlite3.connect('messages.db')
@@ -91,7 +92,7 @@ class MessageHandler:
         elif sender_wx_id == "39292796878@chatroom":
             self.process_879chatroom(message, data)
         else:
-            response = self.ai.get_response("deepseek-chat",message, "你是一个私人助理，回答我的问题，最好每句回答要带上表情符号")
+            response = self.ai.get_response(config["ai"]["model_level_2"],message, "你是一个私人助理，回答我的问题，最好每句回答要带上表情符号")
         self.save_answer({"wx_id": sender_wx_id, "message": response})
 
     #处理读书群消息

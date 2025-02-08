@@ -1,23 +1,19 @@
-from gewechat_client import GewechatClient
-from callbackhandler import run_callback_server
-from send_message.sendmessage import *
 import threading
 import os
+from .receive_message.callbackhandler import run_callback_server
+from .send_message.sendmessage import *
+from .api.client import GewechatClient
+from .util.config import config
 
 def main():
     # 配置参数
-    # base_url = os.environ.get("BASE_URL", "http://10.244.148.75:2531/v2/api")
-    base_url = os.environ.get("BASE_URL", "http://127.0.0.1:2531/v2/api")
-    # 回调函数
-    callback_url = "http://host.docker.internal:9912/bot/receive/"
-    token = ""
-    # app_id = os.environ.get("APP_ID", "xxx")
-    app_id = "wx_eK2IMGLgJyvVz7yPPN7ao"
-    # 回调函数端口
-    port = 9912
+    base_url = config["gewe"]["base_url"]
+    callback_url = config["gewe"]["callback_url"]
+    port = config["gewe"]["callback_port"]
+    app_id = config["gewe"]["app_id"]  
 
     # 创建 GewechatClient 实例
-    client = GewechatClient(base_url, token)
+    client = GewechatClient(base_url)
     # 登录, 自动创建二维码，扫码后自动登录
     app_id, error_msg = client.login(app_id=app_id)
     if error_msg:
@@ -31,7 +27,6 @@ def main():
             return
         else:
             #传入回调函数
-            #在新进程中启用回调
             callback_thread = threading.Thread(target=run_callback_server, args=(callback_url, port))
             callback_thread.start()
 

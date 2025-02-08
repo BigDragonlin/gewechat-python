@@ -8,6 +8,17 @@ gewechat python client
 ```sh
 pip install gewechat-client
 ```
+安装 openai
+```sh
+pip install openai
+```
+安装pyYMAL，以便读取配置
+```
+pip install PyYAML
+```
+```
+pip install matplotlib
+```
 
 使用`login`函数可以直接在控制台打印二维码，扫码后自动执行登录确认，详见下方使用demo代码
 

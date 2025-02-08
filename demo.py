@@ -1,21 +1,16 @@
-from gewechat_client import GewechatClient
 import os
+from gewechat_client.api.client import GewechatClient
+from gewechat_client.util.config import load_config
 
 def main():
     # 配置参数
-    # base_url = os.environ.get("BASE_URL", "http://127.0.0.1:2531/v2/api")
-    base_url = os.environ.get("BASE_URL", "http://host.docker.internal:2531/v2/api")
-
-    # token = os.environ.get("GEWECHAT_TOKE", "xxx")
-    token = ""
-    # app_id = os.environ.get("APP_ID", "xxx")
-    app_id = "wx_eK2IMGLgJyvVz7yPPN7ao"
-
-
+    load_config = load_config()
+    base_url = load_config()["gewe"]["base_url"]
+    app_id = load_config()["gewe"]["app_id"]
     send_msg_nickname = "林木" # 要发送消息的好友昵称
 
     # 创建 GewechatClient 实例
-    client = GewechatClient(base_url, token)
+    client = GewechatClient(base_url)
 
     # 登录, 自动创建二维码，扫码后自动登录
     app_id, error_msg = client.login(app_id=app_id)

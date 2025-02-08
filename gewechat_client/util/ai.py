@@ -1,9 +1,9 @@
 ﻿from openai import OpenAI
-
+from .config import config
 
 class ai:
     def __init__(self, api_key):
-        self.client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+        self.client = OpenAI(api_key=api_key, base_url=config["ai"]["base_url"])
 
     def get_response(self, model, user_message, system_prompt):
         response = self.client.chat.completions.create(
