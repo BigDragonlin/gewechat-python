@@ -1,17 +1,17 @@
-gewe:
-  base_url: "http://gewe:2531/v2/api"
-  callback_url: "http://ubuntu_container:9912/bot/receive/"
-  callback_port: 9912
-  app_id: "wx_-LVko8je25Z4CZB0ZzTo_"
-  token: "dda6bcdf70f043a88f9b9cd7f0bf695a"
+# gewe:
+#   base_url: "http://gewe:2531/v2/api"
+#   callback_url: "http://ubuntu_container:9912/bot/receive/"
+#   callback_port: 9912
+#   app_id: "wx_-LVko8je25Z4CZB0ZzTo_"
+#   token: "dda6bcdf70f043a88f9b9cd7f0bf695a"
 
-ai:
-  base_url: "https://api.siliconflow.cn/v1"
-  api_key: "sk-osvueokmgehawxirutrykumbcwscryggypfkzrurohlnhrtu"
-  model_level_1: "deepseek-ai/DeepSeek-R1"
-  model_level_2: "deepseek-ai/DeepSeek-V3"
-  model_level_3: "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+# ai:
+#   base_url: "https://api.siliconflow.cn/v1"
+#   api_key: "sk-osvueokmgehawxirutrykumbcwscryggypfkzrurohlnhrtu"
+#   model_level_1: "deepseek-ai/DeepSeek-R1"
+#   model_level_2: "deepseek-ai/DeepSeek-V3"
+#   model_level_3: "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
 
-log:
-  level: "INFO"
-  base_file: "app.log"
+# log:
+#   level: "INFO"
+#   base_file: "app.log"
