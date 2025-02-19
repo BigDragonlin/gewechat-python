@@ -2,7 +2,8 @@ gewe:
   base_url: "http://gewe:2531/v2/api"
   callback_url: "http://ubuntu_container:9912/bot/receive/"
   callback_port: 9912
-  app_id: "wx_QdUWDqKzwCFyPa1BsUVuy"
+  app_id: "wx_-LVko8je25Z4CZB0ZzTo_"
+  token: "dda6bcdf70f043a88f9b9cd7f0bf695a"
 
 ai:
   base_url: "https://api.siliconflow.cn/v1"

@@ -1,6 +1,7 @@
 import sqlite3
 from ..util.ai import *
 from ..util.config import config
+from ..util.log import logger
 
 class MessageHandler:
     def __init__(self):
@@ -51,12 +52,17 @@ class MessageHandler:
         self.conn.commit()
     
     def save_answer(self, data):
-        wx_id = data["wx_id"]
-        message = data["message"]
-         # 检查是否已存在该 wx_id
-        print("回答", wx_id, message)
-        self.cursor.execute("INSERT INTO answer_queue_personal (wx_id, message) VALUES (?, ?)", (wx_id, message))
-        self.conn.commit()
+        return "你好"
+        # wx_id = data["wx_id"]
+        # message = data["message"]
+        # print("回答", data)
+        # if message == "":
+        #     return
+        #  # 检查是否已存在该 wx_id
+        # logger.info("回答", wx_id, message)
+        # self.cursor.execute("INSERT INTO answer_queue_personal (wx_id, message) VALUES (?, ?)", (wx_id, message))
+        # self.conn.commit()
+        pass
         
     def handle_message(self, data):
         if "Data" not in data:
@@ -66,17 +72,17 @@ class MessageHandler:
         
         #文字消息
         if isinstance(push_content, int) and push_content == 1:
-            push_content_str = data["Data"].get("PushContent")
+            push_content_str = data["Data"].get("PushContent")   
             if push_content_str and " : " in push_content_str:
                 _, message = push_content_str.split(" : ", 1)
                 sender_wx_id = data["Data"].get("FromUserName").get("string")
-                print("接收消息", sender_wx_id, message)
+                logger.info("接收消息", sender_wx_id, message)
                 self.save_message({"sender_wx_id": sender_wx_id, "message": message})
                 self.process_message(message, sender_wx_id, data)
             else:
-                print("Error: Invalid format for 'PushContentStr'.")
+                logger.error("Error: Invalid format for 'PushContentStr'.")
         else:
-            print("Error: 'PushContent' is not equal to 1 or is not an integer.")
+            logger.error("Error: 'PushContent' is not equal to 1 or is not an integer.")
 
     def process_message(self, message, sender_wx_id, data):
         # 判断message是不是@help, 如果是则返回帮助信息
@@ -92,22 +98,25 @@ class MessageHandler:
         elif message.startswith("@开启"):
             pass
         elif sender_wx_id == "39292796878@chatroom":
-            self.process_879chatroom(message, data)
+            response = self.process_879chatroom(message, data)
         else:
             response = self.ai.get_response(config["ai"]["model_level_2"],message, "你是一个私人助理，回答我的问题，最好每句回答要带上表情符号")
         self.save_answer({"wx_id": sender_wx_id, "message": response})
 
     #处理读书群消息
     def process_879chatroom(self, message, data):
-        #判断是不是打卡消息,"deepseek-reasoner"
-        check_is_checkin = self.ai.get_response("deepseek-chat", message, "你是一个读书打卡群的机器人，判断消息是否是读书分享内容,如果是打卡消息请返回true，如果不是打卡消息，请返回false。")
-        #如果是打卡消息，将打卡数据存到数据库中。并回复打卡成功
-        if check_is_checkin == "true":
-            send_message_wx_id = data["Data"].get("Content").get("string").split(':\n', 1)[0]
-            self.save_checkin_data(send_message_wx_id, message)
-            print(send_message_wx_id, "打卡成功")
-        else:
-            print("check info", check_is_checkin)
+        print("message 测试", message)
+        print("data 数据", data)
+        # #判断是不是打卡消息,"deepseek-reasoner"
+        # check_is_checkin = self.ai.get_response("deepseek-chat", message, "你是一个读书打卡群的机器人，判断消息是否是读书分享内容,如果是打卡消息请返回true，如果不是打卡消息，请返回false。")
+        # #如果是打卡消息，将打卡数据存到数据库中。并回复打卡成功
+        # if check_is_checkin == "true":
+        #     send_message_wx_id = data["Data"].get("Content").get("string").split(':\n', 1)[0]
+        #     self.save_checkin_data(send_message_wx_id, message)
+        #     print(send_message_wx_id, "打卡成功")
+        # else:
+        #     print("check info", check_is_checkin)
+        return "你好呀"
             
     #插入打卡信息到打卡数据库
     def save_checkin_data(self, wx_id, message):
