@@ -60,13 +60,13 @@ class MessageHandler:
         
     def handle_message(self, data):
         if "Data" not in data:
-            print("Error: 'Data' key is missing in the input data.")
+            
             return
         push_content = data["Data"].get("MsgType")
         
         #文字消息
         if isinstance(push_content, int) and push_content == 1:
-            push_content_str = data["Data"].get("PushContent")  # 假设 PushContentStr 是消息内容的键
+            push_content_str = data["Data"].get("PushContent")
             if push_content_str and " : " in push_content_str:
                 _, message = push_content_str.split(" : ", 1)
                 sender_wx_id = data["Data"].get("FromUserName").get("string")
@@ -89,6 +89,8 @@ class MessageHandler:
                        "@exit：退出对话\n" \
                        "@exitall：退出所有对话\n" \
                        "@clearall：清除所有对话记录\n"
+        elif message.startswith("@开启"):
+            pass
         elif sender_wx_id == "39292796878@chatroom":
             self.process_879chatroom(message, data)
         else:

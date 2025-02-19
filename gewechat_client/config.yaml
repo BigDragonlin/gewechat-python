@@ -10,3 +10,10 @@ ai:
   model_level_1: "deepseek-ai/DeepSeek-R1"
   model_level_2: "deepseek-ai/DeepSeek-V3"
   model_level_3: "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+
+dify:
+  api_url: "https://api.dify.ai/v1"
+  fortone_teller:
+    api_type: "completion-messages"
+    api_key: "app-d3VRFwb42JXy3i7GbG4YIGuz"
+    inputs: ["user_zodiac", "today_date"]
