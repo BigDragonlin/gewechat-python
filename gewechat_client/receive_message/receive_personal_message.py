@@ -66,7 +66,7 @@ class MessageHandler:
         
     def handle_message(self, data):
         if "Data" not in data:
-            print("Error: 'Data' key is missing in the input data.")
+            
             return
         push_content = data["Data"].get("MsgType")
         
@@ -95,6 +95,8 @@ class MessageHandler:
                        "@exit：退出对话\n" \
                        "@exitall：退出所有对话\n" \
                        "@clearall：清除所有对话记录\n"
+        elif message.startswith("@开启"):
+            pass
         elif sender_wx_id == "39292796878@chatroom":
             response = self.process_879chatroom(message, data)
         else:
