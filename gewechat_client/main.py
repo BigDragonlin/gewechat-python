@@ -1,9 +1,9 @@
 import threading
-import os
 from .receive_message.callbackhandler import run_callback_server
 from .send_message.sendmessage import *
 from .api.client import GewechatClient
 from .util.config import config
+from .util.log import logger  # 引入日志库
 
 def main():
     # 配置参数
@@ -11,19 +11,20 @@ def main():
     callback_url = config["gewe"]["callback_url"]
     port = config["gewe"]["callback_port"]
     app_id = config["gewe"]["app_id"]  
+    token = config["gewe"]["token"]  
 
     # 创建 GewechatClient 实例
-    client = GewechatClient(base_url)
+    client = GewechatClient(base_url, token)
     # 登录, 自动创建二维码，扫码后自动登录
     app_id, error_msg = client.login(app_id=app_id)
     if error_msg:
-        print("登录失败")
+        logger.error("登录失败")
         return
     try:
         # 给发一条信息确认登录成功
         send_msg_error = send_msg(client, app_id)
         if not send_msg_error:
-            print("发送消息失败")
+            logger.error("发送消息失败")
             return
         else:
             #传入回调函数
@@ -36,7 +37,7 @@ def main():
 
             client.set_callback(client._login_api.token, callback_url)
     except Exception as e:
-        print("Failed to fetch contacts list:", str(e))
+        logger.exception("Failed to fetch contacts list")
 
 if __name__ == "__main__":
     main()

@@ -1,10 +1,8 @@
-import  sqlite3
+import sqlite3
 import time
-
-# from pyte.screens import Cursor
-
 from ..api.client import GewechatClient
 from traceback import print_stack
+from ..util.log import logger  # 引入日志库
 
 class SendMessage:
     def __init__(self, client:GewechatClient, app_id):
@@ -41,8 +39,8 @@ class SendMessage:
         app_id = self.app_id
         send_msg_result = self.client.post_text(app_id, wx_id, message)
         if send_msg_result.get('ret') != 200:
-           print("发送消息失败:", send_msg_result)
-           return
+            logger.error("发送消息失败: %s", send_msg_result)
+            return
 
 def run_send_message_server(client: GewechatClient, app_id):
     send_handler = SendMessage(client, app_id)
@@ -53,7 +51,6 @@ def run_send_message_server(client: GewechatClient, app_id):
                 cursor = conn.cursor()
                 messages = cursor.execute('SELECT * FROM answer_queue_personal').fetchall()
                 if messages:
-                    #开启事务
                     conn.execute("BEGIN TRANSACTION")
                     try:
                         for message in messages:
@@ -63,10 +60,11 @@ def run_send_message_server(client: GewechatClient, app_id):
                             cursor.execute('DELETE FROM answer_queue_personal WHERE wx_id=?', (message[0],))
                             conn.commit()
                     except Exception as e:
-                        # 回滚事务
+                        logger.exception("事务处理失败")
                         conn.rollback()
                         continue
         except Exception as e:
+            logger.exception("消息处理失败")
             continue
 
 
@@ -75,40 +73,37 @@ def send_msg(client, app_id):
     # 获取好友列表
     fetch_contacts_list_result = client.fetch_contacts_list(app_id)
     if fetch_contacts_list_result.get('ret') != 200 or not fetch_contacts_list_result.get('data'):
-        print("获取通讯录列表失败:", fetch_contacts_list_result)
+        logger.error("获取通讯录列表失败: %s", fetch_contacts_list_result)
         return
     # {'ret': 200, 'msg': '操作成功', 'data': {'friends': ['weixin', 'fmessage', 'medianote', le', 'wxid_abcxx'], 'chatrooms': ['1234xx@chatroom'], 'ghs': ['gh_xx']}}
     friends = fetch_contacts_list_result['data'].get('friends', [])
     if not friends:
-        print("获取到的好友列表为空")
+        logger.warning("获取到的好友列表为空")
         return
-    print("获取到的好友列表:", friends)
 
     # 获取好友的简要信息
     friends_info = client.get_brief_info(app_id, friends)
     if friends_info.get('ret') != 200 or not friends_info.get('data'):
-        print("获取好友简要信息失败:", friends_info)
+        logger.error("获取好友简要信息失败: %s", friends_info)
         return
     # 找对目标好友的wxid
     friends_info_list = friends_info['data']
     if not friends_info_list:
-        print("获取到的好友简要信息列表为空")
+        logger.warning("获取到的好友简要信息列表为空")
         return
     wxid = None
     for friend_info in friends_info_list:
         if friend_info.get('nickName') == send_msg_nickname:
-            print("找到好友:", friend_info)
             wxid = friend_info.get('userName')
             break
     if not wxid:
-        print(f"没有找到好友: {send_msg_nickname} 的wxid")
+        logger.error("没有找到好友: %s 的wxid", send_msg_nickname)
         return
-    print("找到好友:", wxid)
 
     # 发送消息
     send_msg_result = client.post_text(app_id, wxid, "你好啊")
     if send_msg_result.get('ret') != 200:
-        print("发送消息失败:", send_msg_result)
+        logger.error("发送消息失败: %s", send_msg_result)
         return
-    print("发送消息成功:", send_msg_result)
+    logger.info("发送消息成功: %s", send_msg_result)
     return True

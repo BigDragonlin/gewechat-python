@@ -30,9 +30,7 @@ class GewechatClient:
 
     注意: 在使用任何方法之前，请确保你已经正确初始化了客户端，并且有有效的 base_url 和 token。
     """
-    def __init__(self, base_url): 
-        token = LoginApi(base_url, "").get_token()["data"]
-        print("打印token", token)
+    def __init__(self, base_url, token): 
         self._contact_api = ContactApi(base_url, token)
         self._download_api = DownloadApi(base_url, token)
         self._favor_api = FavorApi(base_url, token)
