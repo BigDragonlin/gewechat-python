@@ -3,6 +3,13 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from .receive_personal_message import personal_message_handler 
 from ..util.log import logger  # 引入日志库
 
+def message_handler(data):
+    message_type = data.get("Wxid")
+    if message_type.endswith("@chatroom"):
+        logger.info("收到群消息")
+    else:
+        personal_message_handler(data)
+
 class CallbackHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path != "/bot/receive/":
@@ -23,7 +30,7 @@ class CallbackHandler(BaseHTTPRequestHandler):
             self.end_headers()
             response = {"ret": 200, "msg": "消息接收成功"}
             self.wfile.write(json.dumps(response).encode('utf-8'))
-            personal_message_handler(data)
+            message_handler(data)
         except json.JSONDecodeError:
             self.send_response(400)
             self.send_header('Content-type', 'application/json')

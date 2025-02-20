@@ -3,7 +3,7 @@ from ..util.ai import *
 from ..util.config import config
 from ..util.log import logger
 
-class MessageHandler:
+class PersonalMessageHandler:
     def __init__(self):
         # 初始化数据库
         self.init_database()
@@ -66,10 +66,13 @@ class MessageHandler:
         
     def handle_message(self, data):
         if "Data" not in data:
-            
+            logger.error("Error: 'Data' key is missing in the input data.")
             return
+        message_type = data["Data"].get("Wxid")
+        # 如果message_type以@chatroom结尾，则是群聊消息
+        if message_type.endswith("@chatroom"):
+            self.handle_group_message(data)
         push_content = data["Data"].get("MsgType")
-        
         #文字消息
         if isinstance(push_content, int) and push_content == 1:
             push_content_str = data["Data"].get("PushContent")   
@@ -138,4 +141,4 @@ def personal_message_handler(data):
     if "Data" not in data:
         print("Error: 'Data' key is missing in the input data.")
         return
-    MessageHandler().handle_message(data)
+    PersonalMessageHandler().handle_message(data)
