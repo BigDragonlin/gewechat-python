@@ -2,39 +2,50 @@ import sqlite3
 import time
 from ..api.client import GewechatClient
 from traceback import print_stack
-from ..util.log import logger  # 引入日志库
+from ..util.log import logger
+from ..util.db import SqliteDB
 
 class SendMessage:
+    _instance = None
+    def __new__(cls):
+        if cls._instance == None:
+            cls._instance = object.__new__(cls)
+            cls._instance._initialized = False
+            return cls._instance
+        return cls._instance
+        
     def __init__(self, client:GewechatClient, app_id):
-        database = "messages.db"
-        table_name = "answer_queue_personal"
-        self.client = client
-        self.app_id = app_id
-        #初始化sqlite个人消息队列
-        self.init_database_personal_queue(database, table_name)
-        #初始化发送者信息
-        self.self_profile = client._personal_api.get_profile(app_id)
-    
-    def init_database_personal_queue(self, database, table_name):
-        #初始化个人消息队列
-        self.conn = sqlite3.connect(database)
-        self.cursor = self.conn.cursor()
-        self.cursor.execute(f"""
-            CREATE TABLE IF NOT EXISTS {table_name} (
-                wx_id TEXT PRIMARY KEY,
-                message TEXT
-            )
-        """)
-        self.conn.commit()
+        if not self._initialalized:
+            self.client = client
+            self.app_id = app_id
+            #初始化发送者信息
+            self.self_profile = client._personal_api.get_profile(app_id)
+            #初始化朋友圈
+            self.friends_id = []
+            self.get_friends()
+            self.sqlite_db = SqliteDB()
+            self._initialalized = True
             
-    def select_database_personal_by_wx_id(self):
-        self.cursor.execute('SELECT * FROM answer_queue_personal')
-        result = self.cursor.fetchall()
-        if result:
-            return result
-        else:
-            return None
-
+    def get_friends(self):
+        fetch_contacts_list_result = self.client.fetch_contacts_list(self.app_id)
+        if fetch_contacts_list_result.get('ret') != 200 or not fetch_contacts_list_result.get('data'):
+            logger.error("获取通讯录列表失败: %s", fetch_contacts_list_result)
+            return
+        friends = fetch_contacts_list_result['data'].get('friends', [])
+        if not friends:
+            logger.warning("获取到的好友列表为空")
+            return
+        friends_info = self.client.get_brief_info(self.app_id, friends)
+        if friends_info.get('ret') != 200 or not friends_info.get('data'):
+            logger.error("获取好友简要信息失败: %s", friends_info)
+            return
+        friends_info_list = friends_info['data']
+        if not friends_info_list:
+            logger.warning("获取到的好友简要信息列表为空")
+            return
+        for friend_info in friends_info_list:
+                wxid = friend_info.get('userName')
+                self.friends_id.append(wxid)
     def send_msg_by_wxid(self, wx_id, message):
         app_id = self.app_id
         send_msg_result = self.client.post_text(app_id, wx_id, message)
@@ -44,29 +55,20 @@ class SendMessage:
 
 def run_send_message_server(client: GewechatClient, app_id):
     send_handler = SendMessage(client, app_id)
-    send_wx_id = send_handler.self_profile["data"]["wxid"]
+    sqliteDB = SqliteDB()
+    error_time = 0
     while True:
         try:
-            with sqlite3.connect("messages.db") as conn:
-                cursor = conn.cursor()
-                messages = cursor.execute('SELECT * FROM answer_queue_personal').fetchall()
-                if messages:
-                    conn.execute("BEGIN TRANSACTION")
-                    try:
-                        for message in messages:
-                            if message[1]:
-                                send_handler.send_msg_by_wxid(message[0], message[1])
-                                cursor.execute('INSERT INTO user_messages (wx_id, message) VALUES (?, ?)',(send_wx_id, message[1]))
-                            cursor.execute('DELETE FROM answer_queue_personal WHERE wx_id=?', (message[0],))
-                            conn.commit()
-                    except Exception as e:
-                        logger.exception("事务处理失败")
-                        conn.rollback()
-                        continue
+            messages = sqliteDB.select_answer()
+            if messages and messages[0][1] in send_handler.friends_id:
+                send_handler.send_msg_by_wxid(messages[0][1], messages[0][2])
+            sqliteDB.delete_answer(messages[0][0])
         except Exception as e:
-            logger.exception("消息处理失败")
+            logger.exception(f"消息处理失败{e}")
+            error_time += 1
+            if error_time > 20:
+                break
             continue
-
 
 def send_msg(client, app_id):
     send_msg_nickname = "林木"  # 要发送消息的好友昵称

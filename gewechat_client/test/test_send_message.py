@@ -1,17 +1,36 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from gewechat_client.send_message.sendmessage import SendMessage, send_msg
+from gewechat_client.send_message.sendmessage import SendMessage, run_send_message_server
+from gewechat_client.api.client import GewechatClient
+
+import gewechat_client.send_message.sendmessage as target_module
 
 class TestSendMessage(unittest.TestCase):
     def setUp(self):
-        self.send_message = SendMessage(MagicMock(), MagicMock())
-        self.send_message.init_database_personal_queue("../../messages.db","answer_queue_personal")
-    #测试查询
-    def test_select_database_personal_by_wx_id(self):
-        self.send_message.insert_database_personal_queue("11", "测试回答1")
-        self.send_message.insert_database_personal_queue("22", "测试回答2")
-        result = self.send_message.select_database_personal_by_wx_id()
-        print(result)
+        pass
+    def test_send_msg_by_wxid(self):
+        self.send_message.send_msg_by_wxid("test_wxid", "test_message")
+
+    
+    @patch(f"{target_module.__name__}.SqliteDB")
+    @patch(f"{target_module.__name__}.SendMessage")
+    def test_send_msg_server(self, mock_send_message, mock_sqlite_db):
+        # 设置SendMessage的模拟行为
+        mock_send_handler = mock_send_message.return_value
+        mock_send_handler.friends_id = ["test_wxid"]
+        mock_send_handler.send_msg_by_wxid = MagicMock()
+
+        # 设施SqliteDB的模拟行为
+        mock_db_instance = mock_sqlite_db.return_value
+        mock_db_instance.select_answer.return_value = [("1","test_wxid", "test_message", "2021-01-01")]
+        mock_db_instance.delete_answer = MagicMock()
+        #创建模拟的
+        client = MagicMock(spec=GewechatClient)
+        run_send_message_server(client, "test_app_id")
+               
+        # mock_send_handler.send_msg_by_wxid.assert_called_once_with("test_wxid", "test_message")
+        # mock_db_instance.delete_answer.assert_called_once_with(1)
         
+
 if __name__ == '__main__':
     unittest.main()

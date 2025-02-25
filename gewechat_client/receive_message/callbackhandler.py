@@ -30,7 +30,8 @@ class CallbackHandler(BaseHTTPRequestHandler):
             self.end_headers()
             response = {"ret": 200, "msg": "消息接收成功"}
             self.wfile.write(json.dumps(response).encode('utf-8'))
-            message_handler(data)
+            message_handler = MessageHandler()
+            message_handler.message_handler(data)
         except json.JSONDecodeError:
             self.send_response(400)
             self.send_header('Content-type', 'application/json')
@@ -47,7 +48,6 @@ class CallbackHandler(BaseHTTPRequestHandler):
         response = {"ret": 200, "msg": "GET request received"}
         self.wfile.write(json.dumps(response).encode('utf-8'))
 def run_callback_server(callback_url, port):
-    logger.info("run_callback_server %s %s", callback_url, port)
     callback_url = "0.0.0.0"
     server_address = (callback_url, port)
     logger.info("server_address %s", server_address)
