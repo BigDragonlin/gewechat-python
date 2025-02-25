@@ -1,15 +1,22 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from .receive_personal_message import personal_message_handler 
+from .receive_personal_message import PersonalMessageHandler 
+from .receive_group_message import GroupMessageHandler 
 from ..util.log import logger  # 引入日志库
 
 def message_handler(data):
-    message_type = data.get("Wxid")
-    if message_type.endswith("@chatroom"):
-        logger.info("收到群消息")
-    else:
-        personal_message_handler(data)
-
+    try:
+        message_type = data.get("Data").get("FromUserName").get("string")
+        if message_type.endswith("@chatroom"):
+            group_message_handler = GroupMessageHandler()
+            group_message_handler.handle_message(data)
+        else:
+            personal_message_handler = PersonalMessageHandler()
+            personal_message_handler.handle_message(data)
+    except Exception as e:
+        logger.error("Error occurred in message_handler: %s", str(e))
+        raise e
+    
 class CallbackHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path != "/bot/receive/":
@@ -30,8 +37,7 @@ class CallbackHandler(BaseHTTPRequestHandler):
             self.end_headers()
             response = {"ret": 200, "msg": "消息接收成功"}
             self.wfile.write(json.dumps(response).encode('utf-8'))
-            message_handler = MessageHandler()
-            message_handler.message_handler(data)
+            message_handler(data)
         except json.JSONDecodeError:
             self.send_response(400)
             self.send_header('Content-type', 'application/json')

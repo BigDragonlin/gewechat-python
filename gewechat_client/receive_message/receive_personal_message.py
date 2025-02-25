@@ -4,10 +4,20 @@ from ..util.log import logger
 from ..util.db import SqliteDB
 from ..util.ai import Ai
 
-class PersonalPersonalMessageHandler:
+class PersonalMessageHandler:
+    __instance = None
+    def __new__(cls):
+        if cls.__instance is None:
+            cls.__instance = object.__new__(cls)
+            cls.__instance._initialized = False
+            return cls.__instance
+        return cls.__instance
+    
     def __init__(self):
-        self.sqlite_db = SqliteDB()
-        self.ai = Ai()
+        if not self._initialized:
+            self._initialized = True
+            self.sqlite_db = SqliteDB()
+            self.ai = Ai()
                 
     def handle_message(self, data):
         push_content = data["Data"].get("MsgType")
@@ -33,13 +43,13 @@ class PersonalPersonalMessageHandler:
                         "@exit：退出对话\n" \
                         "@exitall：退出所有对话\n" \
                         "@clearall：清除所有对话记录\n"
-            else:
-                ai_level = config["ai"]["model_level_2"]
-                ai_prompt = "你是一个私人助理，回答我的问题，最好每句回答要带上表情符号"
-                response = self.ai.get_response(ai_level, message, ai_prompt)
+            # else:
+            #     ai_level = config["ai"]["model_level_2"]
+            #     ai_prompt = "你是一个私人助理，回答我的问题，最好每句回答要带上表情符号"
+            #     response = self.ai.get_response(ai_level, message, ai_prompt)
         except Exception as e:
             logger.error("Error occurred: %s", str(e))
-            response = "抱歉，我暂时无法理解您的问题。"
+            response = f"出现问题，{e}"
         self.sqlite_db.save_answer(sender_wx_id, response)
         logger.info(f"问题：{message}")
         logger.info(f"回答：{response}")
@@ -74,10 +84,3 @@ class PersonalPersonalMessageHandler:
             return
         self.cursor.execute("INSERT INTO checkin_data (wx_id, message) VALUES (?, ?)", (wx_id, message))
         self.conn.commit()
-            
-def personal_message_handler(data):
-    # 检查 'Data' 键是否存在
-    if "Data" not in data:
-        print("Error: 'Data' key is missing in the input data.")
-        return
-    PersonalMessageHandler().handle_message(data)

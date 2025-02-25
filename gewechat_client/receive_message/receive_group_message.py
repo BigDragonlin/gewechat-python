@@ -8,9 +8,22 @@ import re
 from datetime import datetime
 
 class GroupMessageHandler:
+    _instance = None
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = object.__new__(cls)
+            cls._instance._initialized = False
+            return cls._instance
+        return cls._instance    
+    
     def __init__(self):
-        self.sqlite_db = SqliteDB()
-        self.ai = Ai()
+        if not self._initialized:
+            self._initialized = True
+            # 初始化数据库和AI实例
+            self.sqlite_db = SqliteDB()
+            self.ai = Ai()
+            self.agent = {}
+        
                 
     def handle_message(self, data):
         push_content = data["Data"].get("MsgType")
@@ -22,8 +35,6 @@ class GroupMessageHandler:
                 sender_wx_id = data["Data"].get("FromUserName").get("string")
                 self.sqlite_db.save_message(sender_wx_id, message)
                 self.process_message(message, sender_wx_id, data)
-            else:
-                logger.error("Error: Invalid format for 'PushContentStr'.")
     
     def process_xingzuo(self, xingzuo):
         base_url = config["dify"]["api_url"]
@@ -50,7 +61,7 @@ class GroupMessageHandler:
     
     def process_group_at_message(self, message, data):
         logger.info(f"group_at_message:{message}")
-        pattern = r'/(.*?)\s(.*?)$'  # 修改后的正则表达式模式
+        pattern = r'/(.*?)\s(.*?)$'
         match = re.search(pattern, message)
         first_part = match.group(1)
         second_part = match.group(2)
@@ -60,6 +71,7 @@ class GroupMessageHandler:
 
     def process_message(self, message, sender_wx_id, data):
         response = ""
+        logger.info(f"{sender_wx_id}问题：{message}")
         try:
             if message.startswith("@help"):
                 response = "你可以发送以下命令：\n\n" \
@@ -69,20 +81,34 @@ class GroupMessageHandler:
                         "@exit：退出对话\n" \
                         "@exitall：退出所有对话\n" \
                         "@clearall：清除所有对话记录\n"
-            elif message.startwith == "@机器人\u2005":#如果at机器人，调用直接回答器回应
+            elif message.startswith("@机器人\u2005"):#如果at机器人，调用直接回答器回应
                 response = self.process_group_at_message(message, data)
+            elif message.startswith("/开启"):
+                pattern = r'/(.*?)\s(.*?)$'
+                match = re.search(pattern, message)
+                second_part = match.group(2)
+                print(second_part)
+                self.agent[sender_wx_id]=second_part
+                prompt = "你是一个私人助理，回答我的问题，最好每句回答要带上表情符号"
+                self.ai.start_chat_history(sender_wx_id, prompt)
+                response = f"开启{second_part}成功"
+            elif message.startswith("/关闭"):
+                if sender_wx_id in self.agent:
+                    del self.agent[sender_wx_id]
+                self.ai.stop_chat_history(sender_wx_id)
+                response = "关闭成功"
+            elif self.agent[sender_wx_id]:
+                ai_level = config["ai"]["model_level_1"]
+                response = self.ai.get_response_with_history(sender_wx_id, ai_level, "user", message)
             else:
                 return
-                ai_level = config["ai"]["model_level_2"]
-                ai_prompt = "你是一个私人助理，回答我的问题，最好每句回答要带上表情符号"
-                response = self.ai.get_response(ai_level, message, ai_prompt)
         except Exception as e:
             logger.error("Error occurred: %s", str(e))
             response = f"抱歉,出现错误{e}。"
         if response == "":
             return
-        self.sqlite_db.save_answer(sender_wx_id, response)
-        logger.info(f"{sender_wx_id}问题：{message}")
+        else:
+            self.sqlite_db.save_answer(sender_wx_id, response)
         logger.info(f"回答：{response}")
     
     #处理读书群消息
