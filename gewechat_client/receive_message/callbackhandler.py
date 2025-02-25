@@ -1,21 +1,14 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from .receive_personal_message import PersonalMessageHandler
-from .receive_group_message import GroupMessageHandler
-from ..util.log import logger
+from .receive_personal_message import personal_message_handler 
+from ..util.log import logger  # 引入日志库
 
-class MessageHandler:
-    @staticmethod
-    def message_handler(data):
-        logger.info("Received message: %s", data)
-        try:
-            from_user = data.get("Data").get("FromUserName").get("string")
-            if from_user.endswith("@chatroom"):
-                GroupMessageHandler().handle_message(data)
-            else:
-                PersonalMessageHandler().handle_message(data)
-        except Exception as e:
-            logger.error(f"Error occurred: {str(e)}")
+def message_handler(data):
+    message_type = data.get("Wxid")
+    if message_type.endswith("@chatroom"):
+        logger.info("收到群消息")
+    else:
+        personal_message_handler(data)
 
 class CallbackHandler(BaseHTTPRequestHandler):
     def do_POST(self):

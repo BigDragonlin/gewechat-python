@@ -4,7 +4,7 @@ from ..util.log import logger
 from ..util.db import SqliteDB
 from ..util.ai import Ai
 
-class PersonalMessageHandler:
+class PersonalPersonalMessageHandler:
     def __init__(self):
         self.sqlite_db = SqliteDB()
         self.ai = Ai()
@@ -74,3 +74,10 @@ class PersonalMessageHandler:
             return
         self.cursor.execute("INSERT INTO checkin_data (wx_id, message) VALUES (?, ?)", (wx_id, message))
         self.conn.commit()
+            
+def personal_message_handler(data):
+    # 检查 'Data' 键是否存在
+    if "Data" not in data:
+        print("Error: 'Data' key is missing in the input data.")
+        return
+    PersonalMessageHandler().handle_message(data)
