@@ -1,7 +1,21 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from .receive_personal_message import personal_message_handler 
-from ..util.log import logger  # 引入日志库
+from .receive_personal_message import PersonalMessageHandler
+from .receive_group_message import GroupMessageHandler
+from ..util.log import logger
+
+class MessageHandler:
+    @staticmethod
+    def message_handler(data):
+        logger.info("Received message: %s", data)
+        try:
+            from_user = data.get("Data").get("FromUserName").get("string")
+            if from_user.endswith("@chatroom"):
+                GroupMessageHandler().handle_message(data)
+            else:
+                PersonalMessageHandler().handle_message(data)
+        except Exception as e:
+            logger.error(f"Error occurred: {str(e)}")
 
 class CallbackHandler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -23,7 +37,8 @@ class CallbackHandler(BaseHTTPRequestHandler):
             self.end_headers()
             response = {"ret": 200, "msg": "消息接收成功"}
             self.wfile.write(json.dumps(response).encode('utf-8'))
-            personal_message_handler(data)
+            message_handler = MessageHandler()
+            message_handler.message_handler(data)
         except json.JSONDecodeError:
             self.send_response(400)
             self.send_header('Content-type', 'application/json')
@@ -40,7 +55,6 @@ class CallbackHandler(BaseHTTPRequestHandler):
         response = {"ret": 200, "msg": "GET request received"}
         self.wfile.write(json.dumps(response).encode('utf-8'))
 def run_callback_server(callback_url, port):
-    logger.info("run_callback_server %s %s", callback_url, port)
     callback_url = "0.0.0.0"
     server_address = (callback_url, port)
     logger.info("server_address %s", server_address)

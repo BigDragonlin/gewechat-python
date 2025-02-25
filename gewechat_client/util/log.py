@@ -1,6 +1,5 @@
 import logging
 from .config import config
-print(config["log"])
 logging.basicConfig(
     level=config["log"]["level"],
     format="%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s",
