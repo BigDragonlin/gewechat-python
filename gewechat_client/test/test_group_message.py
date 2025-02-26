@@ -83,6 +83,21 @@ class TestGroupMessageHandler(unittest.TestCase):
                     'MsgSeq': 852987823},
                 'Wxid': 'wxid_z60sn93h78so22'
                 }
+        self.chatroom_data_xingzuo1 = {
+            'TypeName': 'AddMsg',
+            'Appid': 'wx_y3YVd3uP0QI0BAJKnjJr4', 'Data': {
+                'MsgId': 1241327488,
+                'FromUserName':     {'string':'53264107763@chatroom'},
+                'ToUserName': 
+                {'string': 'wxid_z60sn93h78so22'}, 'MsgType': 1,
+                'Content': 
+                    {'string': 'cml1363992060:\n@机器人\u2005/星座 金牛座'}, 
+                'Status': 3,
+                'ImgStatus': 1,
+                'ImgBuf': {'iLen': 0},
+                'CreateTime': 1740552652, 'MsgSource': '<msgsource>\n\t<alnode>\n\t\t<cf>2</cf>\n\t</alnode>\n\t<pua>1</pua>\n\t<silence>1</silence>\n\t<membercount>6</membercount>\n\t<signature>V1_xaZW8jOU|v1_xaZW8jOU</signature>\n\t<tmp_node>\n\t\t<publisher-id></publisher-id>\n\t</tmp_node>\n</msgsource>\n', 'NewMsgId': 6973432079026434027, 'MsgSeq': 852988438},
+            'Wxid': 'wxid_z60sn93h78so22'
+            }
     
     
         self.chatroom_data_start_ai ={
@@ -147,7 +162,14 @@ class TestGroupMessageHandler(unittest.TestCase):
             message_handler(group_data)
         except Exception as e:
             print(f"Error occurred: {str(e)}")
-    
+            
+    def test_group_message_at_xingzuo1(self):
+        """测试群at星座 消息处理"""
+        try:
+            group_data = self.chatroom_data_xingzuo1
+            message_handler(group_data)
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
     
     def test_group_process_group_at_message(self):
         """测试群at消息处理"""

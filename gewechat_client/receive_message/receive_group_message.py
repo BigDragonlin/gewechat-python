@@ -29,11 +29,15 @@ class GroupMessageHandler:
         push_content = data["Data"].get("MsgType")
         #文字消息
         if isinstance(push_content, int) and push_content == 1:
-            push_content_str = data["Data"].get("PushContent")   
-            if push_content_str and ":" in push_content_str:
-                _, message = push_content_str.split(" : ", 1)
-                sender_wx_id = data["Data"].get("FromUserName").get("string")
-                self.sqlite_db.save_message(sender_wx_id, message)
+            push_content_str = data["Data"].get("Content").get("string")   
+            sender_wx_id = data["Data"].get("FromUserName").get("string")
+            if push_content_str and ":\n" in push_content_str:
+                logger.info(f"push_content_str is {push_content_str}")
+                message = re.split(r':\n', push_content_str)
+                self.sqlite_db.save_message(sender_wx_id, message[1])
+                self.process_message(message[1], sender_wx_id, data)
+            else:
+                self.sqlite_db.save_message(sender_wx_id, push_content_str)
                 self.process_message(message, sender_wx_id, data)
     
     def process_xingzuo(self, xingzuo):
@@ -76,12 +80,9 @@ class GroupMessageHandler:
             if message.startswith("@help"):
                 response = "你可以发送以下命令：\n\n" \
                         "@help：查看帮助信息\n" \
-                        "@clear：清除历史记录\n" \
-                        "@reset：重置对话\n" \
-                        "@exit：退出对话\n" \
-                        "@exitall：退出所有对话\n" \
-                        "@clearall：清除所有对话记录\n"
-            elif message.startswith("@机器人\u2005"):#如果at机器人，调用直接回答器回应
+                        "/开启 AI：开启AI\n" \
+                        "/关闭：关闭agent并清除历史记录\n"
+            elif message.startswith("@机器人\u2005"):
                 response = self.process_group_at_message(message, data)
             elif message.startswith("/开启"):
                 pattern = r'/(.*?)\s(.*?)$'
@@ -100,16 +101,14 @@ class GroupMessageHandler:
             elif self.agent[sender_wx_id]:
                 ai_level = config["ai"]["model_level_1"]
                 response = self.ai.get_response_with_history(sender_wx_id, ai_level, "user", message)
-            else:
+            if response == "" or response == None:
                 return
+            else:
+                self.sqlite_db.save_answer(sender_wx_id, response)
+            logger.info(f"回答：{response}")
         except Exception as e:
             logger.error("Error occurred: %s", str(e))
-            response = f"抱歉,出现错误{e}。"
-        if response == "":
-            return
-        else:
-            self.sqlite_db.save_answer(sender_wx_id, response)
-        logger.info(f"回答：{response}")
+            response = f"抱歉,出现错误:{e}。"
     
     #处理读书群消息
     def process_879chatroom(self, message, data):
