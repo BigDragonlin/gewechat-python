@@ -6,13 +6,15 @@ from ..util.log import logger  # 引入日志库
 
 def message_handler(data):
     try:
-        message_type = data.get("Data").get("FromUserName").get("string")
-        if message_type.endswith("@chatroom"):
-            group_message_handler = GroupMessageHandler()
-            group_message_handler.handle_message(data)
-        else:
-            personal_message_handler = PersonalMessageHandler()
-            personal_message_handler.handle_message(data)
+        logger.info(f"原始data{data}")
+        if 'Data' in data:
+            message_type = data.get("Data").get("FromUserName").get("string")
+            if message_type.endswith("@chatroom"):
+                group_message_handler = GroupMessageHandler()
+                group_message_handler.handle_message(data)
+            else:
+                personal_message_handler = PersonalMessageHandler()
+                personal_message_handler.handle_message(data)
     except Exception as e:
         logger.error("Error occurred in message_handler: %s", str(e))
         raise e

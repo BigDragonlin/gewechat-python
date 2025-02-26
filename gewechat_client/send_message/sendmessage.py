@@ -7,7 +7,7 @@ from ..util.db import SqliteDB
 
 class SendMessage:
     _instance = None
-    def __new__(cls):
+    def __new__(cls, client:GewechatClient, app_id):
         if cls._instance == None:
             cls._instance = object.__new__(cls)
             cls._instance._initialized = False
@@ -15,7 +15,7 @@ class SendMessage:
         return cls._instance
         
     def __init__(self, client:GewechatClient, app_id):
-        if not self._initialalized:
+        if not self._initialized:
             self.client = client
             self.app_id = app_id
             #初始化发送者信息
@@ -60,14 +60,20 @@ def run_send_message_server(client: GewechatClient, app_id):
     while True:
         try:
             messages = sqliteDB.select_answer()
-            if messages and messages[0][1] in send_handler.friends_id:
+            if messages:
+                logger.error(f"添加{send_handler.friends_id},{messages[0][1]}")
                 send_handler.send_msg_by_wxid(messages[0][1], messages[0][2])
-            sqliteDB.delete_answer(messages[0][0])
+                sqliteDB.delete_answer(messages[0][0])
+                logger.error(f"message is {messages}")
+            else:
+                time.sleep(2)
+            
         except Exception as e:
             logger.exception(f"消息处理失败{e}")
             error_time += 1
             if error_time > 20:
                 break
+            time.sleep(3)
             continue
 
 def send_msg(client, app_id):
