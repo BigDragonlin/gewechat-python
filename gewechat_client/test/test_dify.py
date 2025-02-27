@@ -94,8 +94,13 @@ class TestDifyAPI(unittest.TestCase):
             "user": "abc-123",
         }
         response = dify.get_response(data)
+        response = response["data"]["outputs"]["text"]
+        formatted_str = ""
+        for key, value in response.items():
+            formatted_str += f"{key}：{value}\n"
+        
         print("response______________")
-        print(response["data"]["outputs"]["text"])
+        print(formatted_str)
     
     #测试运气
     def test_class_dify_yunqi(self):

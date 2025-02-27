@@ -19,6 +19,13 @@ class LoginApi:
             "callbackUrl": callback_url
         }
         return post_json(self.base_url, "/tools/setCallback", self.token, param)
+    
+    def set_reconnection(self, app_id):
+        """设置微信重连"""
+        param = {
+            "appId": app_id
+        }
+        return post_json(self.base_url, "/login/reconnection", self.token, param)
 
     def get_qr(self, app_id):
         """获取登录二维码"""
