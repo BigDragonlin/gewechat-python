@@ -59,7 +59,59 @@ class TestDifyAPI(unittest.TestCase):
         }
         with self.assertRaises(RuntimeError):
             dify.get_response(data)
-
-
+            
+    #测试fangshuren
+    def test_class_dify_fangshuren(self):
+        base_url = config["dify"]["api_url"]
+        api_key = config["dify"]["fangshuren"]["api_key"]
+        api_type = config["dify"]["fangshuren"]["api_type"]
+        # upload_file_id = 'image/fsr.jpg'
+        dify = Dify(base_url, api_type, api_key)
+        data = {
+            "inputs": {},
+            "files": [
+                {
+                    "type": "image",
+                    "transfer_method": "remote_url",
+                    "url": "https://cloud.dify.ai/logo/logo-site.png"
+                }
+            ],
+            "response_mode": "blocking",
+            "user": "abc-123",
+        }
+        response = dify.get_response(data)
+        print(response)
+    
+    #测试灵签
+    def test_class_dify_lingqian(self):
+        base_url = config["dify"]["api_url"]
+        api_key = config["dify"]["lingqian"]["api_key"]
+        api_type = config["dify"]["lingqian"]["api_type"]
+        dify = Dify(base_url, api_type, api_key)
+        data = {
+            "inputs": {},
+            "response_mode": "blocking",
+            "user": "abc-123",
+        }
+        response = dify.get_response(data)
+        print("response______________")
+        print(response["data"]["outputs"]["text"])
+    
+    #测试运气
+    def test_class_dify_yunqi(self):
+        base_url = config["dify"]["api_url"]
+        api_key = config["dify"]["yunqi"]["api_key"]
+        api_type = config["dify"]["yunqi"]["api_type"]
+        dify = Dify(base_url, api_type, api_key)
+        data = {
+            "inputs": {
+                "xingzuo": "摩羯座",
+            },
+            "response_mode": "blocking",
+            "user": "abc-123",
+        }
+        response = dify.get_response(data)
+        print("response______________")
+        print(response["data"]["outputs"]["result"])
 if __name__ == '__main__':
     unittest.main()

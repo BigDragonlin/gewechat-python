@@ -61,8 +61,40 @@ class GroupMessageHandler:
         except Exception as e:
             logger.error(f"{e}")
         
-        
+    def process_lingqian(self):
+        base_url = config["dify"]["api_url"]
+        api_key = config["dify"]["lingqian"]["api_key"]
+        api_type = config["dify"]["lingqian"]["api_type"]
+        dify = Dify(base_url, api_type, api_key)
+        data = {
+            "inputs": {},
+            "response_mode": "blocking",
+            "user": "abc-123",
+        }
+        try:
+            response = dify.get_response(data)
+            return response["data"]["outputs"]["text"]
+        except Exception as e:
+            logger.error(f"{e}")
     
+    def process_yunqi(self, xingzuo):
+        base_url = config["dify"]["api_url"]
+        api_key = config["dify"]["yunqi"]["api_key"]
+        api_type = config["dify"]["yunqi"]["api_type"]
+        dify = Dify(base_url, api_type, api_key)
+        data = {
+            "inputs": {
+                "xingzuo": f"{xingzuo}",
+            },
+            "response_mode": "blocking",
+            "user": "abc-123",
+        }
+        try:
+            response = dify.get_response(data)
+            return response["data"]["outputs"]["result"]
+        except Exception as e:
+            logger.error(f"{e}")
+            return "抱歉，出现错误，请稍后再试。"
     def process_group_at_message(self, message, data):
         logger.info(f"group_at_message:{message}")
         pattern = r'/(.*?)\s(.*?)$'
@@ -71,6 +103,10 @@ class GroupMessageHandler:
         second_part = match.group(2)
         if first_part == "星座":
             return self.process_xingzuo(second_part)
+        elif first_part == "灵签":
+            return self.process_lingqian()
+        elif first_part == "运气":
+            return self.process_yunqi(second_part)
         return ""
 
     def process_message(self, message, sender_wx_id, data):
