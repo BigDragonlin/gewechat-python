@@ -1,7 +1,7 @@
 import os
-from gewechat_client.api.client import GewechatClient
-from gewechat_client.util.config import load_config
-from gewechat_client.util.log import logger  # 引入日志库
+from src.gewechat.api.client import GewechatClient
+from src.gewechat.utils.config import load_config
+from src.gewechat.utils.log import logger  # 引入日志库
 
 def main():
     # 配置参数

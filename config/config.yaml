@@ -1,0 +1,32 @@
+gewe:
+  base_url: "http://gewe:2531/v2/api"
+  callback_url: "http://ubuntu_container:9912/bot/receive/"
+  callback_port: 9912
+  app_id: "wx_z1C2XWFOi00Cb49yMxYp9"
+  token: "dda6bcdf70f043a88f9b9cd7f0bf695a"
+
+ai:
+  base_url: "https://api.siliconflow.cn/v1"
+  api_key: "sk-bwgundgfdobxrupakmfpiegmqjjwbgkfyjdmqzlakwxelefp"
+  model_level_1: "Qwen/Qwen2-7B-Instruct"
+  model_level_2: "deepseek-ai/DeepSeek-V3"
+  model_level_3: "deepseek-ai/DeepSeek-R1"
+
+dify:
+  api_url: "https://api.dify.ai/v1"
+  fortone_teller:
+    api_type: "completion-messages"
+    api_key: "app-d3VRFwb42JXy3i7GbG4YIGuz"
+  fangshuren:
+    api_type: "workflows/run"
+    api_key: "app-vCuDuaA2kp2wfc74MqtgYGkO"
+  lingqian:
+    api_type: "workflows/run"
+    api_key: "app-MSEL2VLQI5qDIAtd6FA9N9wx"
+  yunqi:
+    api_type: "workflows/run"
+    api_key: "app-oGOpHxCZ14JpYY1ZYp54RK6B"
+
+log:
+  base_file: "gewe.log"
+  level: "INFO"
