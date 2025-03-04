@@ -9,12 +9,18 @@ services:
       - "9912:9912"
     volumes:
       - .:/app
+      - ./gewechat_client/config.yaml:/app/gewechat_client/config.yaml
     environment:
       - PYTHONPATH=/app
       - TZ=Asia/Shanghai
+    command: python -m gewechat_client.main
     networks:
-      - gewechat-network
+      - wechat_network
+    tty: true
+    stdin_open: true
+    extra_hosts:
+      - "gewe:172.20.0.4"
 
 networks:
-  gewechat-network:
-    driver: bridge
+  wechat_network:
+    external: true

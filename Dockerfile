@@ -9,4 +9,4 @@ COPY . .
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "app.py"] 
+CMD ["python", "-u", "-m", "gewechat_client.main"] 

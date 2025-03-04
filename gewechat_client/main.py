@@ -6,36 +6,40 @@ from .util.config import config
 from .util.log import logger  # 引入日志库
 
 def main():
+    logger.info("======= Docker测试日志：gewechat服务已启动 =======")
     # 配置参数
     base_url = config["gewe"]["base_url"]
     callback_url = config["gewe"]["callback_url"]
     port = config["gewe"]["callback_port"]
     app_id = config["gewe"]["app_id"]  
     token = config["gewe"]["token"]  
-
+    
     # 创建 GewechatClient 实例
     client = GewechatClient(base_url, token)
+    
     # 登录, 自动创建二维码，扫码后自动登录
+    logger.info("尝试登录中...")
     app_id, error_msg = client.login(app_id=app_id)
     if error_msg:
-        logger.error("登录失败")
+        logger.error(f"登录失败: {error_msg}")
         return
+    
     try:
         # 给发一条信息确认登录成功
         send_msg_error = send_msg(client, app_id)
         if not send_msg_error:
             logger.error("发送消息失败")
             return
-        else:
-            #传入回调函数
-            callback_thread = threading.Thread(target=run_callback_server, args=(callback_url, port))
-            callback_thread.start()
+        
+        # 传入回调函数
+        callback_thread = threading.Thread(target=run_callback_server, args=(callback_url, port))
+        callback_thread.start()
 
-            #设置一个新进程，监听队列中的消息，并发送到微信
-            callback_listener_thread = threading.Thread(target=run_send_message_server, args=(client, app_id))
-            callback_listener_thread.start()
+        # 设置一个新进程，监听队列中的消息，并发送到微信
+        callback_listener_thread = threading.Thread(target=run_send_message_server, args=(client, app_id))
+        callback_listener_thread.start()
 
-            client.set_callback(client._login_api.token, callback_url)
+        client.set_callback(client._login_api.token, callback_url)
     except Exception as e:
         client._login_api.set_reconnection(app_id)
         logger.exception("Failed to fetch contacts list")
