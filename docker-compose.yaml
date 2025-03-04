@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  gewechat:
+    build: .
+    container_name: gewechat-python
+    restart: always
+    ports:
+      - "9912:9912"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+      - TZ=Asia/Shanghai
+    networks:
+      - gewechat-network
+
+networks:
+  gewechat-network:
+    driver: bridge
