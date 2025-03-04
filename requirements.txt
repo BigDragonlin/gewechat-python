@@ -1,2 +1,3 @@
 openai
 gewechat-client
+pyyaml
