@@ -37,6 +37,7 @@ def main():
 
             client.set_callback(client._login_api.token, callback_url)
     except Exception as e:
+        client._login_api.set_reconnection(app_id)
         logger.exception("Failed to fetch contacts list")
 
 if __name__ == "__main__":

@@ -73,7 +73,11 @@ class GroupMessageHandler:
         }
         try:
             response = dify.get_response(data)
-            return response["data"]["outputs"]["text"]
+            response = response["data"]["outputs"]["text"]
+            formatted_str = ""
+            for key, value in response.items():
+                formatted_str += f"{key}：{value}\n"
+            return formatted_str
         except Exception as e:
             logger.error(f"{e}")
     
