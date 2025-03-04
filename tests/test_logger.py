@@ -1,5 +1,5 @@
 import unittest
-from gewechat_client.util.log import logger
+from src.gewechat.utils.log import logger
 
 class Test_logger(unittest.TestCase):
     def test_logger(self):

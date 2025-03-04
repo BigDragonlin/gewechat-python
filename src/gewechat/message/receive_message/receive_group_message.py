@@ -1,9 +1,9 @@
-from ..util.ai import *
-from ..util.config import config
-from ..util.log import logger
-from ..util.db import SqliteDB
-from ..util.ai import Ai
-from ..util.dify import Dify
+from src.gewechat.utils.ai import *
+from src.gewechat.utils.config import config
+from src.gewechat.utils.log import logger
+from src.gewechat.utils.db import SqliteDB
+from src.gewechat.utils.ai import Ai
+from src.gewechat.utils.dify import Dify
 import re
 from datetime import datetime
 

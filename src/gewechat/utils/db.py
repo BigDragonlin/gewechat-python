@@ -1,6 +1,6 @@
 import sqlite3
 import threading
-from ..util.log import logger
+from src.gewechat.utils.log import logger
 
 class SqliteDB:
     _instance = None

@@ -1,5 +1,5 @@
-﻿from ..util.log import logger
-from ..util.config import config
+﻿from src.gewechat.utils.log import logger
+from src.gewechat.utils.config import config
 from openai import OpenAI
 
 class Ai:

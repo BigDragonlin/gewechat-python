@@ -1,8 +1,8 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from .receive_personal_message import PersonalMessageHandler 
-from .receive_group_message import GroupMessageHandler 
-from ..util.log import logger  # 引入日志库
+from src.gewechat.message.receive_message.receive_personal_message import PersonalMessageHandler 
+from src.gewechat.message.receive_message.receive_group_message import GroupMessageHandler 
+from src.gewechat.utils.log import logger  # 引入日志库
 
 def message_handler(data):
     try:

@@ -1,6 +1,6 @@
 import unittest
 import sqlite3
-from gewechat_client.util.db import SqliteDB
+from src.gewechat.utils.db import SqliteDB
 
 
 class TestSQLite(unittest.TestCase):

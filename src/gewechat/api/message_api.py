@@ -1,4 +1,4 @@
-from ..util.http_util import post_json
+from src.gewechat.utils.http_util import post_json
 
 class MessageApi:
     def __init__(self, base_url, token):

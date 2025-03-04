@@ -1,6 +1,6 @@
 import unittest
-from gewechat_client.util.config import config
-from gewechat_client.util.ai import Ai
+from src.gewechat.utils.config import config
+from src.gewechat.utils.ai import Ai
 
 class TestDeepSeekClient(unittest.TestCase):
     def setUp(self):

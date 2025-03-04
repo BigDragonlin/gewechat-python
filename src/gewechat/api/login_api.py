@@ -1,5 +1,5 @@
-from ..util.terminal_printer import make_and_print_qr, print_green, print_yellow, print_red
-from ..util.http_util import post_json
+from src.gewechat.utils.terminal_printer import make_and_print_qr, print_green, print_yellow, print_red
+from src.gewechat.utils.http_util import post_json
 import time
 
 

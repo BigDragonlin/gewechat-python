@@ -1,9 +1,9 @@
 import sqlite3
 import time
-from ..api.client import GewechatClient
+from src.gewechat.api.client import GewechatClient
 from traceback import print_stack
-from ..util.log import logger
-from ..util.db import SqliteDB
+from src.gewechat.utils.log import logger
+from src.gewechat.utils.db import SqliteDB
 
 class SendMessage:
     _instance = None

@@ -1,5 +1,5 @@
 import unittest
-from gewechat_client.util.config import load_config
+from src.gewechat.utils.config import load_config
 
 class Test_Config(unittest.TestCase):
     

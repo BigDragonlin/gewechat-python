@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from gewechat_client.send_message.sendmessage import SendMessage, run_send_message_server
-from gewechat_client.api.client import GewechatClient
+from src.gewechat.message.send_message.sendmessage import SendMessage, run_send_message_server
+from src.gewechat.api.client import GewechatClient
 
-import gewechat_client.send_message.sendmessage as target_module
+import src.gewechat.message.send_message.sendmessage as target_module
 
 class TestSendMessage(unittest.TestCase):
     def setUp(self):

@@ -1,7 +1,7 @@
 ﻿import unittest
 from unittest.mock import Mock, patch
-from gewechat_client.receive_message.receive_personal_message import *
-from gewechat_client.receive_message.callbackhandler import message_handler
+from src.gewechat.message.receive_message.receive_personal_message import *
+from src.gewechat.message.receive_message.callbackhandler import message_handler
 
 
 class TestPersonalMessageHandler(unittest.TestCase):
