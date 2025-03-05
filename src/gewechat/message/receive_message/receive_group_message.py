@@ -38,8 +38,36 @@ class GroupMessageHandler:
                 self.process_message(message[1], sender_wx_id, data)
             else:
                 self.sqlite_db.save_message(sender_wx_id, push_content_str)
-                self.process_message(message, sender_wx_id, data)
-    
+                self.process_message(push_content_str, sender_wx_id, data)
+        #图片消息
+        elif isinstance(push_content, int) and push_content == 3:
+            sender_wx_id = data["Data"].get("FromUserName").get("string")
+            content_str = data["Data"].get("Content").get("string")
+            logger.info(f"收到图片消息，发送者: {sender_wx_id}")
+            
+            # 解析图片信息
+            try:
+                # 解析XML内容获取图片信息
+                img_info = re.search(r'<img.*?/>', content_str)
+                if img_info:
+                    img_xml = img_info.group(0)
+                    # 提取cdnthumburl和aeskey等信息
+                    cdnthumburl = re.search(r'cdnthumburl="(.*?)"', img_xml)
+                    aeskey = re.search(r'aeskey="(.*?)"', img_xml)
+                    
+                    if cdnthumburl and aeskey:
+                        cdnthumburl = cdnthumburl.group(1)
+                        aeskey = aeskey.group(1)
+                        logger.info(f"图片CDN地址: {cdnthumburl}, AES密钥: {aeskey}")
+                        
+                        # 这里可以添加处理图片的逻辑，例如保存图片信息到数据库
+                        self.sqlite_db.save_message(sender_wx_id, f"[图片消息] CDN: {cdnthumburl}")
+                        
+                        # 如果需要，可以调用process_image方法处理图片
+                        self.process_image(cdnthumburl, aeskey, sender_wx_id, data)
+            except Exception as e:
+                logger.error(f"处理图片消息时出错: {str(e)}")
+        
     def process_xingzuo(self, xingzuo):
         base_url = config["dify"]["api_url"]
         api_key = config["dify"]["fortone_teller"]["api_key"]
@@ -179,3 +207,28 @@ class GroupMessageHandler:
             return
         self.cursor.execute("INSERT INTO checkin_data (wx_id, message) VALUES (?, ?)", (wx_id, message))
         self.conn.commit()
+        
+    def process_image(self, cdnthumburl, aeskey, sender_wx_id, data):
+        """处理图片消息
+        
+        Args:
+            cdnthumburl: 图片CDN地址
+            aeskey: 图片AES密钥
+            sender_wx_id: 发送者微信ID
+            data: 原始消息数据
+        
+        Returns:
+            处理结果或回复内容
+        """
+        logger.info(f"处理图片消息: {cdnthumburl}")
+        
+        # 这里可以添加图片处理逻辑
+        # 例如：下载图片、分析图片内容、OCR识别等
+        
+        # 示例：简单回复
+        response = "已收到您的图片"
+        
+        # 保存回复到数据库
+        self.sqlite_db.save_answer(sender_wx_id, response)
+        
+        return response
